@@ -4,11 +4,13 @@ local M = {}
 
 -- Default options for the floating window.
 local settings = {
+	bombs = 10,
 	width = 60,
 	height = 10,
 	borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 	popup_auto_close = true, -- or false
 }
+local field = {}
 
 -- Open a popup window with the headers of the current buffer.
 -- The buffer itself is not modifiable.
@@ -33,15 +35,24 @@ local function open_window()
 		minheight = height,
 		borderchars = borderchars,
 	})
+	for i = 1, height do
+		field[i] = {}
+		for j = 1, width do
+			field[i][j] = 0
+		end
+	end
 
 	vim.api.nvim_win_set_option(window.border.win_id, "winhl", "Normal:MinesweeperBorder")
 
-	-- local contents = {}
-	-- for _, header in ipairs(headers) do
-	-- 	table.insert(contents, header.text)
-	-- end
+	local contents = {}
+	for i = 1, height do
+		contents[i] = {}
+		for j = 1, width do
+			contents[i][j] = field[i][j]
+		end
+	end
 	--
-	-- vim.api.nvim_buf_set_lines(buffer, 0, #contents, false, contents)
+	vim.api.nvim_buf_set_lines(buffer, 0, #contents, false, contents)
 	vim.api.nvim_buf_set_option(buffer, "modifiable", false)
 	vim.api.nvim_set_current_buf(buffer)
 	-- vim.api.nvim_win_set_cursor(window.win_id, { header_to_start_on, 0 })
@@ -73,14 +84,14 @@ M.minesweeper = function(start_on_closest)
 		0,
 		"n",
 		"q",
-		':lua require("md-headers").close_header_window()<CR>',
+		':lua require("minesweeper").close_window()<CR>',
 		{ noremap = true, silent = true }
 	)
 	vim.api.nvim_buf_set_keymap(
 		0,
 		"n",
 		"<Esc>",
-		':lua require("md-headers").close_header_window()<CR>',
+		':lua require("minesweeper").close_window()<CR>',
 		{ noremap = true, silent = true }
 	)
 end
