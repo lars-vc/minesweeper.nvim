@@ -8,14 +8,12 @@ local field = glob.field
 
 local M = {}
 -- TODO:
--- nerdfont
 -- show remaining bomb count
--- better bomb generation
---- difficulty levels
+-- difficulty levels
 -- open and close tab (but remember state)
 -- performance improvements
 -- automated solver as a screensaver
--- center cursor on open
+-- high stakes mode
 
 
 local function open_window()
@@ -41,14 +39,12 @@ local function open_window()
 
     vim.api.nvim_win_set_option(window.border.win_id, "winhl", "Normal:MinesweeperBorder")
 
-    renderer.render()
+    renderer.render(math.floor(height / 2), math.floor(width / 2))
     vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", false)
     vim.api.nvim_set_current_buf(glob.buffer_number)
-    -- vim.api.nvim_win_set_cursor(window.win_id, { header_to_start_on, 0 })
 end
 
 local function new_field()
-    math.randomseed(os.time())
     -- Init
     for i = 1, glob.settings.height do
         field[i] = {}
@@ -61,9 +57,16 @@ local function new_field()
     for _ = 1, glob.settings.bombs do
         local bomb_i = math.random(glob.settings.height)
         local bomb_j = math.random(glob.settings.width)
+        local mid_i = math.floor(glob.settings.height / 2)
+        local mid_j = math.floor(glob.settings.width / 2)
+        while (bomb_i > mid_i - 3 and bomb_i < mid_i + 3 and bomb_j > mid_j - 3 and bomb_j < mid_j + 3) or
+            field[bomb_i][bomb_j].bomb do
+            bomb_i = math.random(glob.settings.height)
+            bomb_j = math.random(glob.settings.width)
+        end
 
         field[bomb_i][bomb_j].bomb = true
-        field[bomb_i][bomb_j].number = 5
+        field[bomb_i][bomb_j].number = 9
     end
 
     -- Add numbers
@@ -94,49 +97,70 @@ local function init()
     vim.api.nvim_win_set_option(0, "cursorline", false)
 
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
         "n",
         "q",
         '<cmd>lua require("minesweeper").close_window()<CR>',
         { noremap = true, silent = true }
     )
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
         "n",
         "<Esc>",
         '<cmd>lua require("minesweeper").close_window()<CR>',
         { noremap = true, silent = true }
     )
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
+        "n",
+        "f",
+        '<cmd>lua require("minesweeper").reveal()<CR>',
+        { noremap = true, silent = true }
+    )
+    vim.api.nvim_buf_set_keymap(
+        glob.buffer_number,
+        "n",
+        "d",
+        '<cmd>lua require("minesweeper").mark()<CR>',
+        { noremap = true, silent = true }
+    )
+    vim.api.nvim_buf_set_keymap(
+        glob.buffer_number,
         "n",
         "o",
         '<cmd>lua require("minesweeper").reveal()<CR>',
         { noremap = true, silent = true }
     )
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
         "n",
         "i",
         '<cmd>lua require("minesweeper").mark()<CR>',
         { noremap = true, silent = true }
     )
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
         "n",
         "r",
         '<cmd>lua require("minesweeper").reset()<CR>',
         { noremap = true, silent = true }
     )
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
         "n",
         "w",
         '<cmd>lua require("minesweeper").wword()<CR>',
         { noremap = true, silent = true }
     )
     vim.api.nvim_buf_set_keymap(
-        0,
+        glob.buffer_number,
+        "n",
+        "b",
+        '<cmd>lua require("minesweeper").bword()<CR>',
+        { noremap = true, silent = true }
+    )
+    vim.api.nvim_buf_set_keymap(
+        glob.buffer_number,
         "n",
         "u",
         '<cmd>lua require("minesweeper").undo_bomb()<CR>',
@@ -240,7 +264,7 @@ local function reveal()
         reveal_pos(x, y, false)
 
         -- render new state
-        renderer.render()
+        renderer.render(x, y)
     end
 end
 
@@ -253,14 +277,14 @@ local function mark()
         end
 
         -- render new state
-        renderer.render()
+        renderer.render(x, y)
     end
 end
 
 local function reset()
     GG = false
     new_field()
-    renderer.render()
+    renderer.render(math.floor(glob.settings.height / 2), math.floor(glob.settings.width / 2))
 end
 
 M.mark = mark
@@ -273,25 +297,25 @@ M.close_window = function()
 end
 
 M.wword = function()
-    local pos = vim.api.nvim_win_get_cursor(0)
-    if glob.settings.nerd_font then
-        pos[2] = pos[2] + 15
+    local x, y = helper.get_pos()
+    if y < glob.settings.width - 5 then
+        helper.set_pos(x, y + 5)
     else
-        pos[2] = pos[2] + 5
+        helper.set_pos(x, glob.settings.width)
     end
-    vim.api.nvim_win_set_cursor(0, pos)
+    helper.set_pos(x, y + 5)
 end
 M.bword = function()
-    local pos = vim.api.nvim_win_get_cursor(0)
-    if glob.settings.nerd_font then
-        pos[2] = pos[2] - 15
+    local x, y = helper.get_pos()
+    if y > 5 then
+        helper.set_pos(x, y - 5)
     else
-        pos[2] = pos[2] - 5
+        helper.set_pos(x, 1)
     end
-    vim.api.nvim_win_set_cursor(0, pos)
 end
 
 M.undo_bomb = function()
+    local x, y = helper.get_pos()
     for i = 1, glob.settings.height do
         for j = 1, glob.settings.width do
             if field[i][j].bomb then
@@ -301,7 +325,7 @@ M.undo_bomb = function()
     end
     GG = false
     print("Undid explosion")
-    renderer.render()
+    renderer.render(x, y)
 end
 
 M.undo_explosion = require("minesweeper.explosion").undo_explosion

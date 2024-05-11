@@ -1,4 +1,5 @@
 local glob = require("minesweeper.globals")
+local helper = require("minesweeper.helper")
 local M = {}
 local icons = {
 	bomb = "",
@@ -39,7 +40,7 @@ local nerd_icons = {
 	},
 }
 
-M.render = function()
+M.render = function(x, y)
 	local field = glob.field
 	local contents = {}
 	for i = 1, glob.settings.height do
@@ -61,13 +62,12 @@ M.render = function()
 		contents[i] = line
 	end
 
-	-- local x, y, info = get_pos_w_info()
-	local pos = vim.api.nvim_win_get_cursor(0)
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", true)
 	vim.api.nvim_buf_set_lines(glob.buffer_number, 0, #contents, false, contents)
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", false)
-	-- set_pos_w_info(x, y, info)
-	vim.api.nvim_win_set_cursor(0, pos)
+	if not GG then
+		helper.set_pos(x, y)
+	end
 end
 
 M.use_nerd = function()

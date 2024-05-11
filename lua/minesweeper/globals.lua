@@ -6,7 +6,7 @@ M.settings = {
 	width = 80,
 	height = 40,
 	borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-	nerd_font = false,
+	nerd_font = true,
 }
 
 return M
