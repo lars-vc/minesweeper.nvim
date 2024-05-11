@@ -43,6 +43,7 @@ local nerd_icons = {
 M.render = function(x, y)
 	local field = glob.field
 	local contents = {}
+	local marks = 0
 	for i = 1, glob.settings.height do
 		contents[i] = {}
 		local line = ""
@@ -55,13 +56,14 @@ M.render = function(x, y)
 				end
 			elseif field[i][j].marked then
 				line = line .. icons.mark
+				marks = marks + 1
 			else
 				line = line .. icons.blank
 			end
 		end
 		contents[i] = line
 	end
-
+	glob.border:change_title("Minesweeper - " .. glob.settings.bombs - marks)
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", true)
 	vim.api.nvim_buf_set_lines(glob.buffer_number, 0, #contents, false, contents)
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", false)

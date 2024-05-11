@@ -8,5 +8,7 @@ M.settings = {
 	borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 	nerd_font = true,
 }
+M.window = {}
+M.border = {}
 
 return M

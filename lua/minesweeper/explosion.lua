@@ -19,7 +19,6 @@ M.explode = function()
 		'<cmd>lua require("minesweeper").close_window()<CR>',
 		{ noremap = true, silent = true }
 	)
-	-- TODO:
 	vim.api.nvim_buf_set_keymap(
 		bomb_buffer,
 		"n",
@@ -63,13 +62,6 @@ M.explode = function()
 		"          | ;  :|     ",
 		" _____.,-#%&$@%#&#~,._____",
 	}
-	-- for i = 1, exp_width do
-	--     contents[i] = {}
-	--     local line = ""
-	--     for j = 1, exp_height do
-	--     end
-	--     contents[i] = line
-	-- end
 
 	vim.api.nvim_buf_set_option(bomb_buffer, "modifiable", true)
 	vim.api.nvim_buf_set_lines(bomb_buffer, 0, #contents, false, contents)
