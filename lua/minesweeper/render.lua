@@ -9,7 +9,7 @@ local icons = {
 }
 local text_icons = {
 	bomb = "X",
-	mark = "*",
+	mark = "!",
 	blank = "#",
 	nums = {
 		" ",

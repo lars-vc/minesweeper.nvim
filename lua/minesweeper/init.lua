@@ -8,11 +8,13 @@ local field = glob.field
 
 local M = {}
 -- TODO:
--- difficulty levels
 -- open and close tab (but remember state)
 -- performance improvements
 -- automated solver as a screensaver
 -- high stakes mode
+-- color
+-- timer
+-- readme
 
 local function create_window()
 	glob.buffer_number = vim.api.nvim_create_buf(false, true)
@@ -93,7 +95,28 @@ local function new_field()
 	end
 end
 
-local function init()
+local function init(opts)
+	if opts.fargs[1] == "easy" then
+		glob.settings.width = 30
+		glob.settings.height = 15
+		glob.settings.bombs = 30
+	elseif opts.fargs[1] == "medium" then
+		glob.settings.width = 55
+		glob.settings.height = 25
+		glob.settings.bombs = 150
+	elseif opts.fargs[1] == "hard" then
+		glob.settings.width = 80
+		glob.settings.height = 40
+		glob.settings.bombs = 500
+	elseif opts.fargs[1] == "insane" then
+		glob.settings.width = 175
+		glob.settings.height = 45
+		glob.settings.bombs = 2500
+	elseif opts.fargs[1] == "custom" or opts.args[1] == nil then
+	else
+		print("Invalid difficulty")
+		return
+	end
 	new_field()
 	local window = create_window()
 
@@ -127,7 +150,7 @@ local function init()
 		"n",
 		"d",
 		'<cmd>lua require("minesweeper").mark()<CR>',
-		{ noremap = true, silent = true }
+		{ noremap = true, silent = true, nowait = true }
 	)
 	vim.api.nvim_buf_set_keymap(
 		glob.buffer_number,
@@ -171,6 +194,13 @@ local function init()
 		'<cmd>lua require("minesweeper").undo_bomb()<CR>',
 		{ noremap = true, silent = true }
 	)
+	vim.api.nvim_buf_set_keymap(
+		glob.buffer_number,
+		"n",
+		"?",
+		'<cmd>lua require("minesweeper").show_help()<CR>',
+		{ noremap = true, silent = true }
+	)
 end
 
 local function reset()
@@ -195,6 +225,66 @@ end
 -- In explosion window
 M.undo_explosion = require("minesweeper.explosion").undo_explosion
 M.explosion_reset = require("minesweeper.explosion").explosion_reset
+M.show_help = function()
+	local buf = vim.api.nvim_create_buf(false, true)
+
+	local width = 40
+	local height = 14
+	local borderchars = glob.settings.borderchars
+
+	-- Options for the new buffer window.
+	-- The window will open in the center of the current window.
+	local _, tup = popup.create(buf, {
+		title = "Help",
+		highlight = "MinesweeperWindow",
+		titlehighlight = "MinesweeperTitle",
+		borderhighlight = "MinesweeperBorder",
+		line = math.floor(((vim.o.lines - height) / 2) - 1),
+		col = math.floor((vim.o.columns - width) / 2),
+		minwidth = width,
+		minheight = height,
+		borderchars = borderchars,
+	})
+
+	vim.api.nvim_win_set_option(tup.border.win_id, "winhl", "Normal:MinesweeperBorder")
+
+	local contents = {
+		"Movement:",
+		"hjkl - what you expect",
+		"wb - 5 tiles back/forward",
+		"^$ - begin or end of line",
+		"",
+		"Interact:",
+		"o/f - reveal tile (also middle click)",
+		"i/d - place flag",
+		"r - reset field",
+		"u - undo explosion (cheater)",
+		"",
+		"Others:",
+		"q/Esc - close window",
+		"? - show this help",
+	}
+
+	vim.api.nvim_buf_set_option(buf, "modifiable", true)
+	vim.api.nvim_buf_set_lines(buf, 0, #contents, false, contents)
+	vim.api.nvim_buf_set_option(buf, "modifiable", false)
+
+	vim.api.nvim_set_current_buf(buf)
+	vim.api.nvim_buf_set_keymap(
+		buf,
+		"n",
+		"q",
+		'<cmd>lua require("minesweeper").close_window()<CR>',
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		buf,
+		"n",
+		"?",
+		'<cmd>lua require("minesweeper").close_window()<CR>',
+		{ noremap = true, silent = true }
+	)
+end
 
 M.minesweeper = init
 -- Set the settings, if any where passed.
@@ -213,9 +303,14 @@ M.setup = function(opts)
 		renderer.use_normal()
 	end
 
-	vim.api.nvim_create_user_command("Minesweeper", function()
-		M.minesweeper()
-	end, {})
+	vim.api.nvim_create_user_command("Minesweeper", function(opts)
+		M.minesweeper(opts)
+	end, {
+		nargs = "*",
+		complete = function(ArgLead, CmdLine, CursorPos)
+			return { "easy", "medium", "hard", "insane", "custom" }
+		end,
+	})
 end
 
 return M
