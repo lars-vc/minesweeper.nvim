@@ -2,13 +2,14 @@ local M = {}
 M.field = {}
 M.buffer_number = 0
 M.settings = {
-	bombs = 500,
-	width = 80,
-	height = 40,
+	width = 55,
+	height = 25,
+	bombs = 150,
 	borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 	nerd_font = true,
 }
 M.window = {}
 M.border = {}
+M.auto_solving = false
 
 return M

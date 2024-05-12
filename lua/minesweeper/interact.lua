@@ -42,6 +42,10 @@ end
 
 -- TODO: check if x2 and y2 are both zero, then dont do iter
 local function reveal_pos(x, y, rec)
+    if rec == nil then
+        rec = false
+    end
+
     if field[x][y].marked then
         return
     end
@@ -134,6 +138,7 @@ end
 
 M.mark = mark
 M.reveal = reveal
+M.reveal_pos = reveal_pos
 M.undo_bomb = undo_bomb
 
 return M

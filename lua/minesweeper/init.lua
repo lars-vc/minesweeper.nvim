@@ -4,17 +4,20 @@ local interact = require("minesweeper.interact")
 local mov = require("minesweeper.movement")
 local glob = require("minesweeper.globals")
 local renderer = require("minesweeper.render")
-local field = glob.field
+local solver = require("minesweeper.autosolver")
+local show_help = require("minesweeper.help_popup")
 
+local field = glob.field
 local M = {}
 -- TODO:
 -- open and close tab (but remember state)
 -- performance improvements
--- automated solver as a screensaver
 -- high stakes mode
 -- color
 -- timer
 -- readme
+-- proper win screen
+-- improve solver (there are solvable cases which currently are not found)
 
 local function create_window()
 	glob.buffer_number = vim.api.nvim_create_buf(false, true)
@@ -96,7 +99,11 @@ local function new_field()
 end
 
 local function init(opts)
-	if opts.fargs[1] == "easy" then
+	if opts.fargs[1] == "baby" then
+		glob.settings.width = 30
+		glob.settings.height = 15
+		glob.settings.bombs = 5
+	elseif opts.fargs[1] == "easy" then
 		glob.settings.width = 30
 		glob.settings.height = 15
 		glob.settings.bombs = 30
@@ -117,6 +124,8 @@ local function init(opts)
 		print("Invalid difficulty")
 		return
 	end
+
+	GG = false
 	new_field()
 	local window = create_window()
 
@@ -201,9 +210,24 @@ local function init(opts)
 		'<cmd>lua require("minesweeper").show_help()<CR>',
 		{ noremap = true, silent = true }
 	)
+	vim.api.nvim_buf_set_keymap(
+		glob.buffer_number,
+		"n",
+		"s",
+		'<cmd>lua require("minesweeper").hint()<CR>',
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		glob.buffer_number,
+		"n",
+		"p",
+		'<cmd>lua require("minesweeper").solve_current()<CR>',
+		{ noremap = true, silent = true }
+	)
 end
 
 local function reset()
+	print("Reset the field")
 	GG = false
 	new_field()
 	renderer.render(math.floor(glob.settings.height / 2), math.floor(glob.settings.width / 2))
@@ -222,70 +246,14 @@ M.close_window = function()
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_close(win, true)
 end
+M.hint = solver.hint
+M.solve_current = solver.solve_current
 -- In explosion window
 M.undo_explosion = require("minesweeper.explosion").undo_explosion
 M.explosion_reset = require("minesweeper.explosion").explosion_reset
-M.show_help = function()
-	local buf = vim.api.nvim_create_buf(false, true)
 
-	local width = 40
-	local height = 14
-	local borderchars = glob.settings.borderchars
-
-	-- Options for the new buffer window.
-	-- The window will open in the center of the current window.
-	local _, tup = popup.create(buf, {
-		title = "Help",
-		highlight = "MinesweeperWindow",
-		titlehighlight = "MinesweeperTitle",
-		borderhighlight = "MinesweeperBorder",
-		line = math.floor(((vim.o.lines - height) / 2) - 1),
-		col = math.floor((vim.o.columns - width) / 2),
-		minwidth = width,
-		minheight = height,
-		borderchars = borderchars,
-	})
-
-	vim.api.nvim_win_set_option(tup.border.win_id, "winhl", "Normal:MinesweeperBorder")
-
-	local contents = {
-		"Movement:",
-		"hjkl - what you expect",
-		"wb - 5 tiles back/forward",
-		"^$ - begin or end of line",
-		"",
-		"Interact:",
-		"o/f - reveal tile (also middle click)",
-		"i/d - place flag",
-		"r - reset field",
-		"u - undo explosion (cheater)",
-		"",
-		"Others:",
-		"q/Esc - close window",
-		"? - show this help",
-	}
-
-	vim.api.nvim_buf_set_option(buf, "modifiable", true)
-	vim.api.nvim_buf_set_lines(buf, 0, #contents, false, contents)
-	vim.api.nvim_buf_set_option(buf, "modifiable", false)
-
-	vim.api.nvim_set_current_buf(buf)
-	vim.api.nvim_buf_set_keymap(
-		buf,
-		"n",
-		"q",
-		'<cmd>lua require("minesweeper").close_window()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		buf,
-		"n",
-		"?",
-		'<cmd>lua require("minesweeper").close_window()<CR>',
-		{ noremap = true, silent = true }
-	)
-end
-
+M.show_help = show_help.help_popup
+M.autosolve = solver.solve
 M.minesweeper = init
 -- Set the settings, if any where passed.
 -- If none are passed, the default settings will be used.
@@ -303,13 +271,21 @@ M.setup = function(opts)
 		renderer.use_normal()
 	end
 
-	vim.api.nvim_create_user_command("Minesweeper", function(opts)
-		M.minesweeper(opts)
+	vim.api.nvim_create_user_command("Minesweeper", function(opt)
+		M.minesweeper(opt)
 	end, {
 		nargs = "*",
 		complete = function(ArgLead, CmdLine, CursorPos)
-			return { "easy", "medium", "hard", "insane", "custom" }
+			return { "baby", "easy", "medium", "hard", "insane", "custom" }
 		end,
+	})
+
+	vim.api.nvim_create_user_command("MinesweeperSolve", function(opt)
+		glob.auto_solving = true
+		M.minesweeper(opt)
+		M.autosolve()
+	end, {
+		nargs = "*",
 	})
 end
 

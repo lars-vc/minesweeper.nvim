@@ -40,7 +40,35 @@ local nerd_icons = {
 	},
 }
 
+local function check_win()
+	if glob.auto_solving then
+		for i = 1, glob.settings.height do
+			for j = 1, glob.settings.width do
+				if glob.field[i][j].bomb then
+					if not glob.field[i][j].marked then
+						return false
+					end
+				elseif not glob.field[i][j].revealed then
+					return false
+				end
+			end
+		end
+	else
+		for i = 1, glob.settings.height do
+			for j = 1, glob.settings.width do
+				if not glob.field[i][j].revealed and not glob.field[i][j].bomb then
+					return false
+				end
+			end
+		end
+	end
+	return true
+end
+
 M.render = function(x, y)
+	if x == nil and y == nil then
+		x, y = helper.get_pos()
+	end
 	local field = glob.field
 	local contents = {}
 	local marks = 0
@@ -69,6 +97,12 @@ M.render = function(x, y)
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", false)
 	if not GG then
 		helper.set_pos(x, y)
+	end
+
+	if check_win() then
+		GG = true
+		glob.auto_solving = false
+		print("You win")
 	end
 end
 
