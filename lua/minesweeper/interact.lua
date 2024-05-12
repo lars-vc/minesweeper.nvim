@@ -3,6 +3,7 @@ local renderer = require("minesweeper.render")
 local helper = require("minesweeper.helper")
 local glob = require("minesweeper.globals")
 local explosion = require("minesweeper.explosion")
+local timer = require("minesweeper.timer")
 local field = glob.field
 
 local function reveal_zero(x, y)
@@ -134,6 +135,7 @@ local function undo_bomb()
     GG = false
     print("Undid explosion")
     renderer.render(x, y)
+    timer.start()
 end
 
 M.mark = mark

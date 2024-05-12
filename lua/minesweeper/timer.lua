@@ -15,8 +15,8 @@ local function start_timer()
 			else
 				local sec = time % 60
 				local min = time / 60
-				local hour = min % 60
-				min = min / 60
+				local hour = min / 60
+				min = min % 60
 				local timestring = string.format("%02d:%02d:%02d", hour, min, sec)
 				title.set_time(timestring)
 				title.make_title()
