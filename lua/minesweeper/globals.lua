@@ -7,6 +7,7 @@ M.settings = {
 	bombs = 150,
 	borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 	nerd_font = true,
+	timer = true,
 }
 M.window = {}
 M.border = {}

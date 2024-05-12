@@ -1,4 +1,5 @@
 local glob = require("minesweeper.globals")
+local title = require("minesweeper.title")
 local helper = require("minesweeper.helper")
 local M = {}
 local icons = {
@@ -91,7 +92,9 @@ M.render = function(x, y)
 		end
 		contents[i] = line
 	end
-	glob.border:change_title("Minesweeper - " .. glob.settings.bombs - marks)
+
+	title.set_marks("" .. glob.settings.bombs - marks)
+	title.make_title()
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", true)
 	vim.api.nvim_buf_set_lines(glob.buffer_number, 0, #contents, false, contents)
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", false)

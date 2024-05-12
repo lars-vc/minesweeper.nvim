@@ -6,6 +6,8 @@ local glob = require("minesweeper.globals")
 local renderer = require("minesweeper.render")
 local solver = require("minesweeper.autosolver")
 local show_help = require("minesweeper.help_popup")
+local timer = require("minesweeper.timer")
+local mapper = require("minesweeper.main_maps")
 
 local field = glob.field
 local M = {}
@@ -47,6 +49,13 @@ local function create_window()
 	renderer.render(math.floor(height / 2), math.floor(width / 2))
 	vim.api.nvim_buf_set_option(glob.buffer_number, "modifiable", false)
 	vim.api.nvim_set_current_buf(glob.buffer_number)
+	if glob.settings.timer then
+		timer.start()
+	end
+	vim.api.nvim_win_set_option(tup.win_id, "number", false)
+	vim.api.nvim_win_set_option(tup.win_id, "relativenumber", false)
+	vim.api.nvim_win_set_option(tup.win_id, "cursorline", false)
+
 	return tup
 end
 
@@ -96,6 +105,8 @@ local function new_field()
 			end
 		end
 	end
+
+	timer.reset()
 end
 
 local function init(opts)
@@ -127,103 +138,18 @@ local function init(opts)
 
 	GG = false
 	new_field()
-	local window = create_window()
+	create_window()
 
-	vim.api.nvim_win_set_option(window.win_id, "number", false)
-	vim.api.nvim_win_set_option(window.win_id, "relativenumber", false)
-	vim.api.nvim_win_set_option(window.win_id, "cursorline", false)
+	mapper.set_maps(glob.buffer_number)
+end
 
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"q",
-		'<cmd>lua require("minesweeper").close_window()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"<Esc>",
-		'<cmd>lua require("minesweeper").close_window()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"f",
-		'<cmd>lua require("minesweeper").reveal()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"d",
-		'<cmd>lua require("minesweeper").mark()<CR>',
-		{ noremap = true, silent = true, nowait = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"o",
-		'<cmd>lua require("minesweeper").reveal()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"i",
-		'<cmd>lua require("minesweeper").mark()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"r",
-		'<cmd>lua require("minesweeper").reset()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"w",
-		'<cmd>lua require("minesweeper").wword()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"b",
-		'<cmd>lua require("minesweeper").bword()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"u",
-		'<cmd>lua require("minesweeper").undo_bomb()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"?",
-		'<cmd>lua require("minesweeper").show_help()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"s",
-		'<cmd>lua require("minesweeper").hint()<CR>',
-		{ noremap = true, silent = true }
-	)
-	vim.api.nvim_buf_set_keymap(
-		glob.buffer_number,
-		"n",
-		"p",
-		'<cmd>lua require("minesweeper").solve_current()<CR>',
-		{ noremap = true, silent = true }
-	)
+M.minesweeper_resume = function()
+	if field == {} then
+		init()
+		return
+	end
+	create_window()
+	mapper.set_maps(glob.buffer_number)
 end
 
 local function reset()
@@ -231,6 +157,8 @@ local function reset()
 	GG = false
 	new_field()
 	renderer.render(math.floor(glob.settings.height / 2), math.floor(glob.settings.width / 2))
+	timer.reset()
+	timer.start()
 end
 
 -- Interactions => affect state
@@ -243,6 +171,7 @@ M.wword = mov.wword
 -- Others
 M.reset = reset
 M.close_window = function()
+	timer.stop()
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_close(win, true)
 end
@@ -279,6 +208,9 @@ M.setup = function(opts)
 			return { "baby", "easy", "medium", "hard", "insane", "custom" }
 		end,
 	})
+	vim.api.nvim_create_user_command("MinesweeperResume", function(opt)
+		M.minesweeper_resume(opt)
+	end, {})
 
 	vim.api.nvim_create_user_command("MinesweeperSolve", function(opt)
 		glob.auto_solving = true
