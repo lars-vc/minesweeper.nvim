@@ -1,4 +1,5 @@
 local M = {}
+
 M.field = {}
 M.buffer_number = 0
 M.settings = {

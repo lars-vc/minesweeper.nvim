@@ -34,8 +34,14 @@ local function show_win_screen()
 	GG = true
 	glob.auto_solving = false
 
+	local contents = {
+		"difficulty: " .. glob.difficulty,
+	}
+	if glob.settings.timer then
+		table.insert(contents, #contents + 1, "time: " .. helper.format_time(timer.time()))
+	end
 	local win_buffer = vim.api.nvim_create_buf(false, true)
-	local win_height = 2
+	local win_height = #contents
 	local win_width = 20
 	vim.api.nvim_buf_set_keymap(
 		win_buffer,
@@ -65,13 +71,6 @@ local function show_win_screen()
 	})
 
 	vim.api.nvim_win_set_option(window.border.win_id, "winhl", "Normal:MinesweeperBorder")
-
-	local contents = {
-		"difficulty: " .. glob.difficulty,
-	}
-	if glob.settings.timer then
-		table.insert(contents, #contents + 1, "time: " .. helper.format_time(timer.time()))
-	end
 
 	vim.api.nvim_buf_set_option(win_buffer, "modifiable", true)
 	vim.api.nvim_buf_set_lines(win_buffer, 0, #contents, false, contents)

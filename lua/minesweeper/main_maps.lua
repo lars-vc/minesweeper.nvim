@@ -4,14 +4,14 @@ M.set_maps = function(buf)
 		buf,
 		"n",
 		"q",
-		'<cmd>lua require("minesweeper").close_window()<CR>',
+		'<cmd>lua require("minesweeper").close_main_window()<CR>',
 		{ noremap = true, silent = true }
 	)
 	vim.api.nvim_buf_set_keymap(
 		buf,
 		"n",
 		"<Esc>",
-		'<cmd>lua require("minesweeper").close_window()<CR>',
+		'<cmd>lua require("minesweeper").close_main_window()<CR>',
 		{ noremap = true, silent = true }
 	)
 	vim.api.nvim_buf_set_keymap(

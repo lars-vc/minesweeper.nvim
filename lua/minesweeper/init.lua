@@ -9,6 +9,7 @@ local show_help = require("minesweeper.help_popup")
 local timer = require("minesweeper.timer")
 local mapper = require("minesweeper.main_maps")
 
+local open = false
 local field = glob.field
 local M = {}
 -- TODO:
@@ -16,9 +17,7 @@ local M = {}
 -- performance improvements
 -- high stakes mode
 -- color
--- timer
 -- readme
--- proper win screen
 -- improve solver (there are solvable cases which currently are not found)
 
 local function create_window()
@@ -41,7 +40,7 @@ local function create_window()
 		minheight = height,
 		borderchars = borderchars,
 	})
-	glob.window = tup.window
+	glob.win_id = tup.win_id
 	glob.border = tup.border
 
 	vim.api.nvim_win_set_option(tup.border.win_id, "winhl", "Normal:MinesweeperBorder")
@@ -110,6 +109,10 @@ local function new_field()
 end
 
 local function init(opts)
+	if open then
+		M.close_main_window()
+	end
+	open = true
 	if opts.fargs[1] == "baby" then
 		glob.settings.width = 30
 		glob.settings.height = 15
@@ -176,9 +179,13 @@ M.bword = mov.bword
 M.wword = mov.wword
 -- Others
 M.reset = reset
-M.close_window = function()
+M.close_main_window = function()
+	open = false
 	timer.stop()
 	solver.stop_solving()
+	vim.api.nvim_win_close(glob.win_id, true)
+end
+M.close_window = function()
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_close(win, true)
 end
@@ -215,8 +222,11 @@ M.setup = function(opts)
 			return { "baby", "easy", "medium", "hard", "insane", "custom" }
 		end,
 	})
-	vim.api.nvim_create_user_command("MinesweeperResume", function(opt)
-		M.minesweeper_resume(opt)
+	vim.api.nvim_create_user_command("MinesweeperResume", function()
+		M.minesweeper_resume()
+	end, {})
+	vim.api.nvim_create_user_command("MinesweeperClose", function()
+		M.close_main_window()
 	end, {})
 
 	vim.api.nvim_create_user_command("MinesweeperSolve", function(opt)
