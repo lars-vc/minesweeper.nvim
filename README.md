@@ -6,6 +6,10 @@
 - Color: TODO
 - High stakes mode: TODO
 
+## Launch
+Start a game with `:Minesweeper DIFFICULTY` \
+Can resume after closing with `:MinesweeperResume`
+
 ## Controls
 ```
 ?: Toggles the help screen
