@@ -3,6 +3,7 @@ local interaction = require("minesweeper.interact")
 local helper = require("minesweeper.helper")
 local M = {}
 local field = glob.field
+local timer = nil
 
 local function solve_iter()
 	local height = glob.settings.height
@@ -90,15 +91,18 @@ local function solve()
 	helper.set_pos(math.floor(height / 2), math.floor(width / 2))
 	interaction.reveal()
 
+	timer = vim.loop.new_timer()
 	-- iter the solve
-	local timer = vim.loop.new_timer()
 	timer:start(
 		0,
 		50,
 		vim.schedule_wrap(function()
 			if not solve_iter() or not glob.auto_solving then
 				glob.auto_solving = false
-				timer:close()
+				if timer ~= nil then
+					timer:close()
+					timer = nil
+				end
 			end
 		end)
 	)
@@ -119,7 +123,17 @@ local function hint()
 	end
 end
 
+local stop_solving = function()
+	glob.auto_solving = false
+	if timer ~= nil then
+		timer:close()
+		timer = nil
+	end
+end
+
 M.solve_current = solve_current
 M.solve = solve
 M.hint = hint
+M.stop_solving = stop_solving
+
 return M

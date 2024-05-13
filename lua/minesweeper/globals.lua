@@ -12,5 +12,6 @@ M.settings = {
 M.window = {}
 M.border = {}
 M.auto_solving = false
+M.difficulty = "medium"
 
 return M

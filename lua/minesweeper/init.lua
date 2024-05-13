@@ -114,23 +114,29 @@ local function init(opts)
 		glob.settings.width = 30
 		glob.settings.height = 15
 		glob.settings.bombs = 5
+		glob.difficulty = "baby"
 	elseif opts.fargs[1] == "easy" then
 		glob.settings.width = 30
 		glob.settings.height = 15
 		glob.settings.bombs = 30
-	elseif opts.fargs[1] == "medium" then
+		glob.difficulty = "easy"
+	elseif opts.fargs[1] == "medium" or opts.args[1] == nil then
 		glob.settings.width = 55
 		glob.settings.height = 25
 		glob.settings.bombs = 150
+		glob.difficulty = "medium"
 	elseif opts.fargs[1] == "hard" then
 		glob.settings.width = 80
 		glob.settings.height = 40
 		glob.settings.bombs = 500
+		glob.difficulty = "hard"
 	elseif opts.fargs[1] == "insane" then
 		glob.settings.width = 175
 		glob.settings.height = 45
 		glob.settings.bombs = 2500
-	elseif opts.fargs[1] == "custom" or opts.args[1] == nil then
+		glob.difficulty = "insane"
+	elseif opts.fargs[1] == "custom" then
+		glob.difficulty = "custom"
 	else
 		print("Invalid difficulty")
 		return
@@ -172,6 +178,7 @@ M.wword = mov.wword
 M.reset = reset
 M.close_window = function()
 	timer.stop()
+	solver.stop_solving()
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_close(win, true)
 end

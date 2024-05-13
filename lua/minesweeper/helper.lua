@@ -5,6 +5,14 @@ local function is_nerd(x, y)
 	return not glob.field[x][y].revealed or glob.field[x][y].bomb
 end
 
+M.format_time = function(time)
+	local sec = time % 60
+	local min = time / 60
+	local hour = min / 60
+	min = min % 60
+	return string.format("%02d:%02d:%02d", hour, min, sec)
+end
+
 -- get the position of the cursor converted to field coordinates
 M.get_pos = function()
 	local tup = vim.api.nvim_win_get_cursor(0)

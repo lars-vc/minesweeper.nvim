@@ -1,7 +1,10 @@
 local glob = require("minesweeper.globals")
 local title = require("minesweeper.title")
 local helper = require("minesweeper.helper")
+local win = require("minesweeper.win")
+
 local M = {}
+
 local icons = {
 	bomb = "",
 	mark = "",
@@ -41,31 +44,6 @@ local nerd_icons = {
 	},
 }
 
-local function check_win()
-	if glob.auto_solving then
-		for i = 1, glob.settings.height do
-			for j = 1, glob.settings.width do
-				if glob.field[i][j].bomb then
-					if not glob.field[i][j].marked then
-						return false
-					end
-				elseif not glob.field[i][j].revealed then
-					return false
-				end
-			end
-		end
-	else
-		for i = 1, glob.settings.height do
-			for j = 1, glob.settings.width do
-				if not glob.field[i][j].revealed and not glob.field[i][j].bomb then
-					return false
-				end
-			end
-		end
-	end
-	return true
-end
-
 M.render = function(x, y)
 	if x == nil and y == nil then
 		x, y = helper.get_pos()
@@ -102,10 +80,8 @@ M.render = function(x, y)
 		helper.set_pos(x, y)
 	end
 
-	if check_win() then
-		GG = true
-		glob.auto_solving = false
-		print("You win")
+	if win.check_win() then
+		win.do_win()
 	end
 end
 
