@@ -1,5 +1,23 @@
 # Minesweeper.nvim
 *Minesweeper in Neovim*
+
+## How to install
+### Packer
+```
+use({
+	"lars-vc/minesweeper.nvim",
+	config = function()
+		require("minesweeper").setup({
+            width = 55,  -- For custom difficulty
+            height = 25, -- For custom difficulty
+            bombs = 150, -- For custom difficulty
+            borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- Border for the popup windows
+            nerd_font = true, -- Enable if you have nerd font installed
+            timer = true, -- Display the timer
+        })
+	end,
+})
+```
 ## Features
 - Difficulties: baby, easy, medium, hard, insane or custom
 - Autosolving, can be used as a hint or just watch it solve entire fields
