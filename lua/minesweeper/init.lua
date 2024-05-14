@@ -9,11 +9,9 @@ local show_help = require("minesweeper.help_popup")
 local timer = require("minesweeper.timer")
 local mapper = require("minesweeper.main_maps")
 
-local open = false
 local field = glob.field
 local M = {}
 -- TODO:
--- open and close tab (but remember state)
 -- performance improvements
 -- high stakes mode
 -- color
@@ -111,10 +109,10 @@ local function new_field()
 end
 
 local function init(opts)
-	if open then
+	local win = vim.api.nvim_get_current_win()
+	if win == glob.win_id then
 		M.close_main_window()
 	end
-	open = true
 	if opts == nil then
 		opts = { fargs = { "medium" } }
 	end
@@ -188,10 +186,10 @@ M.reset = reset
 M.close_main_window = function()
 	timer.stop()
 	solver.stop_solving()
-	if open then
+	local win = vim.api.nvim_get_current_win()
+	if win == glob.win_id then
 		vim.api.nvim_win_close(glob.win_id, true)
 	end
-	open = false
 end
 M.close_window = function()
 	local win = vim.api.nvim_get_current_win()

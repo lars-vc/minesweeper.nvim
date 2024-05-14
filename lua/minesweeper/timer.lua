@@ -1,8 +1,19 @@
 local title = require("minesweeper.title")
+local glob = require("minesweeper.globals")
 local helper = require("minesweeper.helper")
+
 local M = {}
+
 local time = 0
 local timer = nil
+
+local function stop_timer()
+	if timer ~= nil then
+		timer:close()
+		timer = nil
+	end
+end
+
 local function start_timer()
 	timer = vim.loop.new_timer()
 	timer:start(
@@ -10,22 +21,19 @@ local function start_timer()
 		1000,
 		vim.schedule_wrap(function()
 			time = time + 1
-			if GG and timer ~= nil then
-				timer:close()
-				timer = nil
+			local win = vim.api.nvim_get_current_win()
+			if win == glob.win_id then
+				if GG then
+					stop_timer()
+				else
+					title.set_time(helper.format_time(time))
+					title.make_title()
+				end
 			else
-				title.set_time(helper.format_time(time))
-				title.make_title()
+				stop_timer()
 			end
 		end)
 	)
-end
-
-local function stop_timer()
-	if timer ~= nil then
-		timer:close()
-		timer = nil
-	end
 end
 
 local function reset_timer()

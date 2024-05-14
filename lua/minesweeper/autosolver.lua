@@ -84,6 +84,14 @@ local function solve_iter()
 	return false
 end
 
+local stop_solving = function()
+	glob.auto_solving = false
+	if timer ~= nil then
+		timer:close()
+		timer = nil
+	end
+end
+
 local function solve()
 	-- reveal the center
 	local height = glob.settings.height
@@ -97,12 +105,13 @@ local function solve()
 		0,
 		50,
 		vim.schedule_wrap(function()
-			if not solve_iter() or not glob.auto_solving then
-				glob.auto_solving = false
-				if timer ~= nil then
-					timer:close()
-					timer = nil
+			local win = vim.api.nvim_get_current_win()
+			if win == glob.win_id then
+				if not solve_iter() or not glob.auto_solving then
+					stop_solving()
 				end
+			else
+				stop_solving()
 			end
 		end)
 	)
@@ -120,14 +129,6 @@ end
 local function hint()
 	if not solve_iter() then
 		print("No hint available")
-	end
-end
-
-local stop_solving = function()
-	glob.auto_solving = false
-	if timer ~= nil then
-		timer:close()
-		timer = nil
 	end
 end
 
