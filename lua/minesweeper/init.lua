@@ -115,6 +115,10 @@ local function init(opts)
 		M.close_main_window()
 	end
 	open = true
+	if opts == nil then
+		opts = { fargs = { "medium" } }
+	end
+
 	if opts.fargs[1] == "baby" then
 		glob.settings.width = 30
 		glob.settings.height = 15
@@ -155,7 +159,7 @@ local function init(opts)
 end
 
 M.minesweeper_resume = function()
-	if field == {} then
+	if next(field) == nil then
 		init()
 		return
 	end
