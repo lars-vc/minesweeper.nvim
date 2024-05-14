@@ -7,11 +7,12 @@
 use({
 	"lars-vc/minesweeper.nvim",
 	config = function()
-		require("minesweeper").setup({
+        require("minesweeper").setup({
             width = 55,  -- For custom difficulty
             height = 25, -- For custom difficulty
             bombs = 150, -- For custom difficulty
-            borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- Border for the popup windows
+            borderchars = 
+                { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, -- Border for the popup windows
             nerd_font = true, -- Enable if you have nerd font installed
             timer = true, -- Display the timer
         })
