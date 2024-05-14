@@ -5,8 +5,8 @@
 ### Packer
 ```lua
 use({
-	"lars-vc/minesweeper.nvim",
-	config = function()
+    "lars-vc/minesweeper.nvim",
+    config = function()
         require("minesweeper").setup({
             width = 55,  -- For custom difficulty
             height = 25, -- For custom difficulty
@@ -16,7 +16,7 @@ use({
             nerd_font = true, -- Enable if you have nerd font installed
             timer = true, -- Display the timer
         })
-	end,
+    end,
 })
 ```
 ## Features
