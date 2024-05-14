@@ -10,7 +10,7 @@ local function start_timer()
 		1000,
 		vim.schedule_wrap(function()
 			time = time + 1
-			if GG then
+			if GG and timer ~= nil then
 				timer:close()
 				timer = nil
 			else
