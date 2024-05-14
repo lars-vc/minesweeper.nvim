@@ -24,6 +24,7 @@ end
 local function stop_timer()
 	if timer ~= nil then
 		timer:close()
+		timer = nil
 	end
 end
 

@@ -19,6 +19,8 @@ local M = {}
 -- color
 -- readme
 -- improve solver (there are solvable cases which currently are not found)
+-- hint on new board
+-- fix docs
 
 local function create_window()
 	glob.buffer_number = vim.api.nvim_create_buf(false, true)
@@ -180,10 +182,12 @@ M.wword = mov.wword
 -- Others
 M.reset = reset
 M.close_main_window = function()
-	open = false
 	timer.stop()
 	solver.stop_solving()
-	vim.api.nvim_win_close(glob.win_id, true)
+	if open then
+		vim.api.nvim_win_close(glob.win_id, true)
+	end
+	open = false
 end
 M.close_window = function()
 	local win = vim.api.nvim_get_current_win()
