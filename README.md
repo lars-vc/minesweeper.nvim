@@ -3,7 +3,7 @@
 
 ## How to install
 ### Packer
-```
+```lua
 use({
 	"lars-vc/minesweeper.nvim",
 	config = function()
