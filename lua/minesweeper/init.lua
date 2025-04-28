@@ -127,7 +127,7 @@ local function init(opts)
 		glob.settings.height = 15
 		glob.settings.bombs = 30
 		glob.difficulty = "easy"
-	elseif opts.fargs[1] == "medium" or opts.args[1] == nil then
+	elseif opts.fargs[1] == "medium" or opts.fargs[1] == nil then
 		glob.settings.width = 55
 		glob.settings.height = 25
 		glob.settings.bombs = 150
